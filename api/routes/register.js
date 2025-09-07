@@ -26,7 +26,7 @@ router.post('/register', [
     .isInt({ min: 13, max: 120 })
     .withMessage('Edad debe ser un número entre 13 y 120'),
     
-  body('correoElectronico')
+  body('correo')
     .isEmail()
     .withMessage('Formato de correo electrónico inválido')
     .normalizeEmail(),

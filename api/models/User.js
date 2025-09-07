@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const { preSave } = require('../middleware/auth');
 
 const UserSchema = new mongoose.Schema({
   // Campos requeridos por US-1
@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema({
     }
   },
   
-  correoElectronico: {
+  correo: {
     type: String,
     required: [true, 'Correo electrónico es requerido'],
     unique: true,
@@ -68,6 +68,27 @@ const UserSchema = new mongoose.Schema({
     maxlength: [20, 'Username no puede exceder 20 caracteres'],
     match: [/^[a-zA-Z0-9_-]+$/, 'Username solo puede contener letras, números, guiones y guión bajo']
   },
+
+  //Campos para US-2
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
+
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+
+  lockUntil: {
+    type: Date,
+    default: null
+  },
+
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
   
   isActive: {
     type: Boolean,
@@ -80,33 +101,64 @@ const UserSchema = new mongoose.Schema({
     transform: function(doc, ret) {
       // No incluir contrasena en respuestas JSON
       delete ret.contrasena;
+      delete ret.loginAttempts;
+      delete ret.lockUntil;
       return ret;
     }
   }
 });
 
-// MIDDLEWARE PRE-SAVE: Hash de contraseña con bcrypt (min 10 salt rounds)
-UserSchema.pre('save', async function(next) {
-  // Solo hashear si la contraseña es nueva o fue modificada
-  if (!this.isModified('contrasena')) return next();
-  
-  try {
-    // Hash con 12 salt rounds (más que el mínimo de 10)
-    this.contrasena = await bcrypt.hash(this.contrasena, 12);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+// Aplicar el middleware preSave al esquema
+preSave(UserSchema);
 
-// MÉTODO PARA VERIFICAR CONTRASEÑA
-UserSchema.methods.compararContrasena = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.contrasena);
+//validar si la cuenta está bloqueada
+UserSchema.methods.isAccountLocked = function() {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+};
+
+//Metodo para incrementar intentos fallidos
+/*UserSchema.methods.incLoginAttempts = function() {
+  //resetear si pasó el tiempo de bloqueo
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.model('User').updateOne(
+      { _id: this._id },
+      {
+        $unset: { lockUntil: 1 },
+        $set: { loginAttempts: 0, isLocked: false }
+      }
+    );
+  }
+
+  const updates = { $inc: { loginAttempts: 1 } };
+
+  // Si alcanzó el máximo de intentos (5), bloquear por 10 minutos
+  if (this.loginAttempts + 1 >= 5 && !this.isAccountLocked()) {
+    updates.$set = {
+      lockUntil: Date.now() + (10 * 60 * 1000), // 10 minutos
+      isLocked: true
+    };
+  }
+
+  return this.model('User').updateOne(
+    { _id: this._id },
+    updates
+  );
+};*/
+
+//resetear intentos despues de login exitoso
+UserSchema.methods.resetLoginAttempts = function() {
+  return this.model('User').updateOne({
+    $unset: { lockUntil: 1, loginAttempts: 1 }, // Quitar campos de bloqueo
+    $set: { 
+      lastLogin: new Date(),  // Actualizar último acceso
+      isLocked: false       // Marcar como no bloqueado
+    }
+  });
 };
 
 // ÍNDICES PARA OPTIMIZACIÓN
-UserSchema.index({ correoElectronico: 1 }, { unique: true });
-UserSchema.index({ username: 1 }, { unique: true });
-UserSchema.index({ createdAt: -1 });
+//UserSchema.index({ correo: 1 }, { unique: true });
+//UserSchema.index({ username: 1 }, { unique: true });
+//UserSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('User', UserSchema);

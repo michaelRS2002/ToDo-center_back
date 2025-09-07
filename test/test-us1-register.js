@@ -9,7 +9,7 @@ async function testUS1Registration() {
     console.log('✅ Conectado a MongoDB');
     
     // Limpiar datos de prueba anteriores
-    await User.deleteOne({ correoElectronico: 'test@example.com' });
+    await User.deleteOne({ correo: 'test@example.com' });
     
     // CASO DE PRUEBA 1: Registro exitoso
     console.log('\n🧪 CASO 1: Registro exitoso');
@@ -17,14 +17,14 @@ async function testUS1Registration() {
       nombres: 'Juan',
       apellidos: 'Pérez',
       edad: 25,
-      correoElectronico: 'test@example.com',
+      correo: 'test@example.com',
       contrasena: 'MiPassword123!',
       username: 'juanperez123'
     });
     
     const savedUser = await testUser.save();
     console.log('✅ Usuario creado exitosamente');
-    console.log('📧 Email:', savedUser.correoElectronico);
+    console.log('📧 Email:', savedUser.correo);
     console.log('🆔 ID:', savedUser._id);
     console.log('📅 Creado:', savedUser.createdAt);
     console.log('🔒 Password hasheada:', savedUser.contrasena.substring(0, 20) + '...');
@@ -40,7 +40,7 @@ async function testUS1Registration() {
         nombres: 'María',
         apellidos: 'García',
         edad: 30,
-        correoElectronico: 'test@example.com', // Mismo email
+        correo: 'test@example.com', // Mismo email
         contrasena: 'OtraPassword123!',
         username: 'mariagarcia123'
       });
@@ -57,7 +57,7 @@ async function testUS1Registration() {
         nombres: 'A', // Muy corto
         apellidos: '', // Vacío
         edad: 12, // Menor a 13
-        correoElectronico: 'email-invalido', // Formato inválido
+        correo: 'email-invalido', // Formato inválido
         contrasena: '123', // Muy simple
         username: 'us'
       });
@@ -69,7 +69,7 @@ async function testUS1Registration() {
     }
     
     // Limpiar datos de prueba
-    //await User.deleteOne({ correoElectronico: 'test@example.com' });
+    //await User.deleteOne({ correo: 'test@example.com' });
     //console.log('\n🧹 Datos de prueba limpiados');
     
     await mongoose.connection.close();
