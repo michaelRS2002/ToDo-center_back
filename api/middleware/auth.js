@@ -31,7 +31,7 @@ const preSave = (schema) => {
     
     try {
       // Hash con 12 salt rounds (más que el mínimo de 10)
-      this.contrasena = await bcrypt.hash(this.contrasena, 12);
+      this.contrasena = bcrypt.hash(this.contrasena, 12);
       next();
     } catch (error) {
       next(error);

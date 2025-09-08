@@ -1,1 +1,0 @@
-const UserSchema = require('../models/User');
