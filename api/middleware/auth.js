@@ -2,42 +2,31 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { verifyToken } = require('../utils/jwt'); // Usar la función del jwt.js
 
-const authenticateToken = async (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'No se proporcionó un token de autenticación'
+      message: 'Token de acceso requerido'
     });
   }
 
-  try {
-    const decoded = await verifyToken(token);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    if (error.message === 'TOKEN_EXPIRED') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expirado',
-        code: 'TOKEN_EXPIRED'
-      });
-    } else if (error.message === 'TOKEN_BLACKLISTED') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token inválido',
-        code: 'TOKEN_BLACKLISTED'
-      });
-    } else {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
       return res.status(403).json({
         success: false,
         message: 'Token inválido o expirado'
       });
     }
-  }
+    
+    console.log('Usuario decodificado del token:', user); // Debug
+    req.user = user; // Aquí debe estar el ID
+    next();
+  });
 };
+
 // MIDDLEWARE PRE-SAVE: Hash de contraseña con bcrypt (min 10 salt rounds)
 const preSave = (schema) => {
   schema.pre('save', async function(next) {
