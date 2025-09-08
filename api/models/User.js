@@ -51,24 +51,12 @@ const UserSchema = new mongoose.Schema({
     minlength: [8, 'Contraseña debe tener al menos 8 caracteres'],
     validate: {
       validator: function(password) {
-        // Al menos 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password);
+        
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/.test(password);
       },
       message: 'Contraseña debe contener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial'
     }
   },
-  
-  // Campos adicionales para el sistema
-  username: {
-    type: String,
-    required: [true, 'Username es requerido'],
-    unique: true,
-    trim: true,
-    minlength: [3, 'Username debe tener al menos 3 caracteres'],
-    maxlength: [20, 'Username no puede exceder 20 caracteres'],
-    match: [/^[a-zA-Z0-9_-]+$/, 'Username solo puede contener letras, números, guiones y guión bajo']
-  },
-
   //Campos para US-2
   lastLogin: {
     type: Date,

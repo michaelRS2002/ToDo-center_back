@@ -34,7 +34,7 @@ router.post('/register', [
   body('contrasena')
     .isLength({ min: 8 })
     .withMessage('Contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])/)
     .withMessage('Contraseña debe contener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial'),
     
   body('confirmarContrasena')
@@ -44,13 +44,6 @@ router.post('/register', [
       }
       return true;
     }),
-    
-  body('username')
-    .trim()
-    .isLength({ min: 3, max: 20 })
-    .withMessage('Username debe tener entre 3 y 20 caracteres')
-    .matches(/^[a-zA-Z0-9_-]+$/)
-    .withMessage('Username solo puede contener letras, números, guiones y guión bajo'),
     
 ], validateRequest, registerUser);
 

@@ -48,30 +48,19 @@ const registerUser = async (req, res) => {
         message: 'Este correo ya está registrado'
       });
     }
-    
-    // 3. VERIFICAR SI EL USERNAME YA EXISTE
-    const existingUsername = await User.findOne({ username });
-    if (existingUsername) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este username ya está en uso'
-      });
-    }
-    
-    // 4. CREAR NUEVO USUARIO
+    // 3. CREAR NUEVO USUARIO
     const newUser = new User({
       nombres,
       apellidos,
       edad: parseInt(edad), // Asegurar que sea número
       correo: correo.toLowerCase(),
       contrasena, // Se hasheará automáticamente por el middleware pre-save
-      username
     });
     
-    // 5. GUARDAR EN MONGODB
+    // 4. GUARDAR EN MONGODB
     const savedUser = await newUser.save();
     
-    // 6. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
+    // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
     res.status(201).json({
       success: true,
       message: 'Cuenta creada con éxito',
@@ -81,7 +70,6 @@ const registerUser = async (req, res) => {
         apellidos: savedUser.apellidos,
         edad: savedUser.edad,
         correo: savedUser.correo,
-        username: savedUser.username,
         createdAt: savedUser.createdAt // ISO-8601 automático
       }
     });
