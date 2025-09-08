@@ -4,6 +4,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const passwordResetRoutes = require("./routes/passWordResetRoutes");
+const taskRoutes = require("./routes/taskRoutes"); 
 const { connectDB } = require("./config/database");
 
 const app = express();
@@ -16,7 +17,8 @@ app.use(cors());
 // Rutas
 app.use("/api/auth", authRoutes);      // login, register, logout
 app.use("/api/users", userRoutes);     // CRUD usuarios
-app.use("/api/password-reset", passwordResetRoutes); // Nueva ruta
+app.use("/api/password-reset", passwordResetRoutes);
+app.use("/api/tasks", taskRoutes);  
 app.get("/", (req, res) => res.send("Server is running"));
 
 // Only start the server if this file is run directly
