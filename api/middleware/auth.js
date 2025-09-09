@@ -1,14 +1,15 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { verifyToken } = require('../utils/jwt'); // Usar la función del jwt.js
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'No se proporcionó un token de autenticación'
+      message: 'Token de acceso requerido'
     });
   }
 
@@ -19,10 +20,13 @@ const authenticateToken = (req, res, next) => {
         message: 'Token inválido o expirado'
       });
     }
-    req.user = user;
+    
+    console.log('Usuario decodificado del token:', user); // Debug
+    req.user = user; // Aquí debe estar el ID
     next();
   });
 };
+
 // MIDDLEWARE PRE-SAVE: Hash de contraseña con bcrypt (min 10 salt rounds)
 const preSave = (schema) => {
   schema.pre('save', async function(next) {
@@ -31,7 +35,7 @@ const preSave = (schema) => {
     
     try {
       // Hash con 12 salt rounds (más que el mínimo de 10)
-      this.contrasena = await bcrypt.hash(this.contrasena, 12);
+      this.contrasena = bcrypt.hash(this.contrasena, 12);
       next();
     } catch (error) {
       next(error);

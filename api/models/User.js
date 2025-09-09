@@ -1,6 +1,38 @@
 const mongoose = require('mongoose');
-const { preSave } = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
 
+/**
+ * @fileoverview Esquema de usuario para el sistema ToDo Center.
+ * Implementa las validaciones y requisitos especificados en US-1 (Registro básico).
+ * 
+ * @module models/User
+ * @requires mongoose
+ * @requires bcryptjs
+ * @since 1.0.0
+ */
+
+/**
+ * @typedef {Object} UserDocument
+ * @property {string} nombres - Nombres del usuario (2-50 caracteres)
+ * @property {string} apellidos - Apellidos del usuario (2-50 caracteres)
+ * @property {number} edad - Edad del usuario (≥13 años, número entero)
+ * @property {string} correo - Correo electrónico único (formato RFC 5322)
+ * @property {string} contrasena - Contraseña hasheada (≥8 chars, validación compleja)
+ * @property {Date} lastLogin - Última fecha de acceso exitoso
+ * @property {number} loginAttempts - Contador de intentos de login fallidos
+ * @property {Date} lockUntil - Fecha hasta cuando la cuenta está bloqueada
+ * @property {boolean} isLocked - Indica si la cuenta está bloqueada
+ * @property {boolean} isActive - Indica si la cuenta está activa
+ * @property {Date} createdAt - Fecha de creación (automático)
+ * @property {Date} updatedAt - Fecha de última actualización (automático)
+ */
+
+/**
+ * Esquema de usuario que cumple con los criterios de US-1 (Registro básico).
+ * Incluye validaciones de seguridad, control de intentos de login y persistencia segura.
+ * 
+ * @type {mongoose.Schema<UserDocument>}
+ */
 const UserSchema = new mongoose.Schema({
   // Campos requeridos por US-1
   nombres: {
@@ -69,8 +101,7 @@ const UserSchema = new mongoose.Schema({
   },
 
   lockUntil: {
-    type: Date,
-    default: null
+    type: Date
   },
 
   isLocked: {
@@ -96,46 +127,70 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Aplicar el middleware preSave al esquema
-preSave(UserSchema);
+// Middleware para hashear la contraseña antes de guardar
+UserSchema.pre('save', async function(next) {
+  // Solo hashear la contraseña si ha sido modificada (o es nueva)
+  if (!this.isModified('contrasena')) return next();
+  
+  try {
+    // Generar salt y hashear la contraseña
+    const salt = await bcrypt.genSalt(12);
+    this.contrasena = await bcrypt.hash(this.contrasena, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
-//validar si la cuenta está bloqueada
-UserSchema.methods.isAccountLocked = function() {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
+/**
+ * Compara una contraseña en texto plano con la contraseña hasheada del usuario.
+ * 
+ * @method comparePassword
+ * @memberof UserSchema
+ * @param {string} candidatePassword - Contraseña en texto plano a verificar
+ * @returns {Promise<boolean>} true si las contraseñas coinciden, false en caso contrario
+ * @example
+ * const user = await User.findById(userId);
+ * const isValid = await user.comparePassword('password123');
+ * if (isValid) {
+ *   console.log('Contraseña correcta');
+ * }
+ */
+UserSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.contrasena);
 };
 
-//Metodo para incrementar intentos fallidos
-/*UserSchema.methods.incLoginAttempts = function() {
-  //resetear si pasó el tiempo de bloqueo
-  if (this.lockUntil && this.lockUntil < Date.now()) {
-    return this.model('User').updateOne(
-      { _id: this._id },
-      {
-        $unset: { lockUntil: 1 },
-        $set: { loginAttempts: 0, isLocked: false }
-      }
-    );
-  }
+/**
+ * Verifica si la cuenta de usuario está actualmente bloqueada.
+ * Una cuenta se considera bloqueada si tiene un timestamp lockUntil válido y futuro.
+ * 
+ * @method isAccountLocked
+ * @memberof UserSchema
+ * @returns {boolean} true si la cuenta está bloqueada, false en caso contrario
+ * @example
+ * const user = await User.findById(userId);
+ * if (user.isAccountLocked()) {
+ *   console.log('Cuenta bloqueada hasta:', user.lockUntil);
+ * }
+ */
+UserSchema.methods.isAccountLocked = function() {
+  return this.lockUntil && this.lockUntil > Date.now();
+};
 
-  const updates = { $inc: { loginAttempts: 1 } };
-
-  // Si alcanzó el máximo de intentos (5), bloquear por 10 minutos
-  if (this.loginAttempts + 1 >= 5 && !this.isAccountLocked()) {
-    updates.$set = {
-      lockUntil: Date.now() + (10 * 60 * 1000), // 10 minutos
-      isLocked: true
-    };
-  }
-
-  return this.model('User').updateOne(
-    { _id: this._id },
-    updates
-  );
-};*/
-
-//resetear intentos despues de login exitoso
+/**
+ * Resetea los intentos de login fallidos después de un login exitoso.
+ * Elimina los campos de bloqueo y actualiza la fecha de último acceso.
+ * 
+ * @method resetLoginAttempts
+ * @memberof UserSchema
+ * @returns {Promise<UpdateResult>} Resultado de la operación de actualización
+ * @example
+ * const user = await User.findById(userId);
+ * await user.resetLoginAttempts();
+ * console.log('Intentos de login reseteados');
+ */
 UserSchema.methods.resetLoginAttempts = function() {
-  return this.model('User').updateOne({
+  return this.updateOne({
     $unset: { lockUntil: 1, loginAttempts: 1 }, // Quitar campos de bloqueo
     $set: { 
       lastLogin: new Date(),  // Actualizar último acceso
@@ -144,9 +199,64 @@ UserSchema.methods.resetLoginAttempts = function() {
   });
 };
 
-// ÍNDICES PARA OPTIMIZACIÓN
-//UserSchema.index({ correo: 1 }, { unique: true });
-//UserSchema.index({ username: 1 }, { unique: true });
-//UserSchema.index({ createdAt: -1 });
+/**
+ * Incrementa el contador de intentos de login fallidos.
+ * Si se alcanzan los intentos máximos (5), bloquea la cuenta por 10 minutos.
+ * 
+ * @method incrementLoginAttempts
+ * @memberof UserSchema
+ * @returns {Promise<UpdateResult>} Resultado de la operación de actualización
+ * @example
+ * const user = await User.findById(userId);
+ * await user.incrementLoginAttempts();
+ * if (user.isAccountLocked()) {
+ *   console.log('Cuenta bloqueada por intentos excesivos');
+ * }
+ */
+UserSchema.methods.incrementLoginAttempts = function() {
+  const maxAttempts = 5;
+  const lockTime = 10 * 60 * 1000; // 10 minutos
+  
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.updateOne({
+      $unset: {
+        loginAttempts: 1,
+        lockUntil: 1
+      }
+    });
+  }
+  
+  const updates = { $inc: { loginAttempts: 1 } };
+  
+  if (this.loginAttempts + 1 >= maxAttempts && !this.isAccountLocked()) {
+    updates.$set = {
+      lockUntil: Date.now() + lockTime
+    };
+  }
+  
+  return this.updateOne(updates);
+};
+
+/**
+ * Resetea la contraseña del usuario y limpia los contadores de seguridad.
+ * Utilizado en procesos de recuperación de contraseña.
+ * 
+ * @method resetPassword
+ * @memberof UserSchema
+ * @param {string} newPassword - Nueva contraseña en texto plano (será hasheada automáticamente)
+ * @returns {Promise<UserDocument>} Usuario actualizado
+ * @example
+ * const user = await User.findById(userId);
+ * await user.resetPassword('nuevaPassword123!');
+ * console.log('Contraseña actualizada exitosamente');
+ */
+UserSchema.methods.resetPassword = async function(newPassword) {
+  this.contrasena = newPassword;
+  // Resetear intentos de login al cambiar contraseña
+  this.loginAttempts = 0;
+  this.lockUntil = undefined;
+  this.isLocked = false;
+  return await this.save();
+};
 
 module.exports = mongoose.model('User', UserSchema);

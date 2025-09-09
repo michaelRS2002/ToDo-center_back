@@ -2,35 +2,54 @@ const User = require('../models/User');
 const LoginAttempt = require('../models/LoginAttempt');
 const { generateToken } = require('../utils/jwt');
 const bcrypt = require('bcryptjs');
-const mongoose = require('mongoose');
 
-//Verificar contraseña con control de intentos
-const comparePasswordWithRateLimit = async (user, candidatePassword) => {
-  // Primero verificar si la cuenta está bloqueada
-  if (user.lockUntil && user.lockUntil > Date.now()) {
-    throw new Error('CUENTA_BLOQUEADA');
-  }
-  
-  // Comparar la contraseña ingresada con la hasheada en BD
-  const isMatch = await bcrypt.compare(candidatePassword, user.contrasena);
-  
-  if (isMatch) { // Login exitoso
-    await user.resetLoginAttempts();
-    return true;
-  } else { // Login fallido
-    await user.incLoginAttempts();
-    throw new Error('CONTRASEÑA_INCORRECTA');
-  }
-};
+/**
+ * @fileoverview Controlador de autenticación para ToDo Center.
+ * Maneja el registro, login y logout de usuarios según especificaciones US-1 y US-2.
+ * 
+ * @module controllers/AuthController
+ * @requires ../models/User
+ * @requires ../models/LoginAttempt  
+ * @requires ../utils/jwt
+ * @requires bcryptjs
+ * @since 1.0.0
+ */
 
-// MÉTODO PARA VERIFICAR CONTRASEÑA
-const comparePassword = async (candidatePassword, user) => {
-  return await bcrypt.compare(candidatePassword, user.contrasena);
-};
-
+/**
+ * Registra un nuevo usuario en el sistema (US-1: Registro básico).
+ * Implementa todas las validaciones y criterios de aceptación especificados.
+ * 
+ * @async
+ * @function registerUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @param {string} req.body.nombres - Nombres del usuario (2-50 caracteres)
+ * @param {string} req.body.apellidos - Apellidos del usuario (2-50 caracteres)
+ * @param {number} req.body.edad - Edad del usuario (≥13 años)
+ * @param {string} req.body.correo - Email único válido
+ * @param {string} req.body.contrasena - Contraseña segura (≥8 chars, validación compleja)
+ * @param {string} req.body.confirmarContrasena - Confirmación de contraseña
+ * @returns {Promise<void>} Respuesta HTTP 201 con datos del usuario o error
+ * 
+ * @example
+ * // POST /api/auth/register
+ * {
+ *   "nombres": "Juan",
+ *   "apellidos": "Pérez",
+ *   "edad": 25,
+ *   "correo": "juan@email.com",
+ *   "contrasena": "MiPassword123!",
+ *   "confirmarContrasena": "MiPassword123!"
+ * }
+ * 
+ * @throws {400} Validación fallida o contraseñas no coinciden
+ * @throws {409} Email ya registrado
+ * @throws {500} Error interno del servidor
+ */
 const registerUser = async (req, res) => {
   try {
-    const { nombres, apellidos, edad, correo, contrasena, confirmarContrasena, username } = req.body;
+    const { nombres, apellidos, edad, correo, contrasena, confirmarContrasena } = req.body;
+  
     
     // 1. VALIDACIÓN DE CONFIRMACIÓN DE CONTRASEÑA
     if (contrasena !== confirmarContrasena) {
@@ -48,18 +67,23 @@ const registerUser = async (req, res) => {
         message: 'Este correo ya está registrado'
       });
     }
+    
+    
     // 3. CREAR NUEVO USUARIO
     const newUser = new User({
       nombres,
       apellidos,
       edad: parseInt(edad), // Asegurar que sea número
       correo: correo.toLowerCase(),
-      contrasena, // Se hasheará automáticamente por el middleware pre-save
+      contrasena // Se hasheará automáticamente por el middleware pre-save
+   
     });
     
     // 4. GUARDAR EN MONGODB
+    // 4. GUARDAR EN MONGODB
     const savedUser = await newUser.save();
     
+    // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
     // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
     res.status(201).json({
       success: true,
@@ -95,7 +119,7 @@ const registerUser = async (req, res) => {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(409).json({
         success: false,
-        message: `${field === 'correo' ? 'Este correo' : 'Este username'} ya está registrado`
+        message: `Este correo ya está registrado`
       });
     }
     
@@ -107,112 +131,105 @@ const registerUser = async (req, res) => {
   }
 };
 
+/**
+ * Autentica un usuario existente en el sistema (US-2: Login seguro).
+ * Implementa rate limiting, control de intentos y seguridad avanzada.
+ * 
+ * @async
+ * @function loginUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @param {string} req.body.correo - Email del usuario
+ * @param {string} req.body.contrasena - Contraseña del usuario
+ * @returns {Promise<void>} Respuesta HTTP 200 con token JWT o error
+ * 
+ * @example
+ * // POST /api/auth/login
+ * {
+ *   "correo": "juan@email.com",
+ *   "contrasena": "MiPassword123!"
+ * }
+ * 
+ * @throws {401} Credenciales inválidas
+ * @throws {423} Cuenta bloqueada por intentos excesivos
+ * @throws {429} Rate limit excedido por IP
+ * @throws {500} Error interno del servidor
+ */
 const loginUser = async (req, res) => {
+  const { correo, contrasena } = req.body;
+  const clientIP = req.ip || req.connection.remoteAddress;
+  
   try {
-    const { correo, contrasena } = req.body;
-    const clientIP = req.ip || req.connection.remoteAddress;
-
-    // 1. VALIDAR RATE LIMITTING POR IP
-    try {
-      await LoginAttempt.checkRateLimit(clientIP);
-    } catch (error) {
-      if (error.message === 'CUENTA_BLOQUEADA') {
-        return res.status(429).json({
-          success: false,
-          message: 'Cuenta bloqueada. Intenta de nuevo más tarde',
-          retryAfter: 600 // 10 minutos
-        });
-      }
-      throw error;
-    }
-
-    // 2. VALIDAR CREDENCIALES
-    const user = await User.findOne({ 
-      correo: correo.toLowerCase(),
-      isActive: true 
-    });
-
+    const user = req.user; // Viene del middleware loginSecurity
+    
     if (!user) {
-      try {
-        await LoginAttempt.registerFailedAttempt(clientIP);
-      } catch (error) {
-        if (error.message === 'IP_RATE_LIMITED') {
-          return res.status(429).json({
-            success: false,
-            message: 'Demasiados intentos fallidos. Intenta despues de 10 minutos',
-          });
-        }
-        throw error;
-      }
+      await LoginAttempt.registerFailedAttempt(clientIP);
       return res.status(401).json({
         success: false,
-        message: 'Correo o contraseña inválidos'
-      });
-    }
-
-    // 3. VALIDAR SI LA CUENTA ESTA BLOQUEADA
-    if (user.isAccountLocked()) {
-      return res.status(423).json({
-        success: false,
-        message: 'Cuenta bloqueada. Intenta despues de 10 minutos',
+        message: 'Credenciales inválidas'
       });
     }
     
-    // 4. VERIFICAR CONTRASEÑA CON RATE LIMITING
-    let isPasswordValid;
-    try {
-      isPasswordValid = await comparePasswordWithRateLimit(user, contrasena);
-    } catch (error) {
-      if (error.message === 'CUENTA_BLOQUEADA') {
-        return res.status(423).json({
-          success: false,
-          message: 'Cuenta bloqueada. Intenta despues de 10 minutos',
-        });
-      }
-      throw error;
-    }
-
+    // Usar el método comparePassword en lugar de comparación directa
+    const isPasswordValid = await user.comparePassword(contrasena);
+    
     if (!isPasswordValid) {
-      try {
-        await LoginAttempt.registerFailedAttempt(clientIP);
-      } catch (error) {
-        if (error.message === 'IP_RATE_LIMITED') {
-          return res.status(429).json({
-            success: false,
-            message: 'Demasiados intentos fallidos. Intenta despues de 10 minutos',
-          });
-        }
-      }
+      await user.incrementLoginAttempts();
+      await LoginAttempt.registerFailedAttempt(clientIP);
+      
       return res.status(401).json({
         success: false,
-        message: 'Correo o contraseña inválidos'
+        message: 'Credenciales inválidas'
       });
     }
-
-    // 5. LOGIN EXITOSO: GENERAR JWT
-    const token = generateToken(user);
     
-    // 6. RESETEAR CONTADORES DE INTENTOS FALLIDOS
-    await LoginAttempt.resetAttempts(clientIP);
-
-    // 7. DEVOLVER TOKEN Y DATOS DEL USUARIO
-    return res.status(200).json({
+    // Resetear intentos fallidos al login exitoso
+    await user.resetLoginAttempts();
+    await LoginAttempt.clearAttempts(clientIP);
+    
+    // Generar token JWT usando la función importada
+    const token = generateToken({
+      _id: user._id, 
+      correo: user.correo
+    });
+    
+    res.status(200).json({
       success: true,
       message: 'Login exitoso',
-      token,
-      user: {
-        id: user._id,
-        username: user.username
+      data: {
+        token,
+        user: {
+          id: user._id,
+          nombres: user.nombres,
+          apellidos: user.apellidos,
+          correo: user.correo
+        }
       }
     });
-  } finally {
-    // 8. DESCONECTAR DE LA BASE DE DATOS
-    await mongoose.disconnect();
+    
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
   }
-}
+};
 
+/**
+ * Cierra la sesión del usuario actual.
+ * En implementaciones futuras podría invalidar el token JWT.
+ * 
+ * @function logoutUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @returns {void} Respuesta HTTP 200 confirmando logout
+ * 
+ * @example
+ * // POST /api/auth/logout
+ * // Headers: Authorization: Bearer <token>
+ */
 const logoutUser = (req, res) => {
-  // In a real app, you might want to invalidate the token here
   res.status(200).json({
     success: true,
     message: 'Logout exitoso'
@@ -222,7 +239,5 @@ const logoutUser = (req, res) => {
 module.exports = { 
   registerUser, 
   loginUser,
-  logoutUser,
-  comparePasswordWithRateLimit,
-  comparePassword
+  logoutUser
 };
