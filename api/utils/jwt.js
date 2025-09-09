@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const BlacklistedToken = require('../models/BlacklistedToken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-jwt-secret-super-seguro-aqui';
-const JWT_EXPIRES_IN = '2h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
 
 // GENERAR TOKEN JWT
 const generateToken = (user) => {
