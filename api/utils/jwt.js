@@ -9,8 +9,7 @@ const generateToken = (user) => {
     // información que va dentro del token
   const payload = {
     userId: user._id,
-    correo: user.correo,
-    username: user.username
+    correo: user.correo
   };
   
   // Crear el token JWT con:
