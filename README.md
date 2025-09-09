@@ -2,7 +2,7 @@
 
 API backend para la aplicación de gestión de tareas ToDo Center. Construido con Node.js, Express.js y MongoDB, implementa autenticación segura con JWT y funcionalidades completas de gestión de usuarios y tareas.
 
-## 📋 Índice
+## Índice
 
 - [Descripción del Proyecto](#descripción-del-proyecto)
 - [Tecnologías](#tecnologías)
@@ -16,7 +16,7 @@ API backend para la aplicación de gestión de tareas ToDo Center. Construido co
 - [Variables de Entorno](#variables-de-entorno)
 - [Documentación API](#documentación-api)
 
-## 📖 Descripción del Proyecto
+## Descripción del Proyecto
 
 Este es el backend de la aplicación ToDo Center, que proporciona una API RESTful para la gestión de usuarios y tareas. Implementa funcionalidades de registro, autenticación, gestión de tareas y características de seguridad avanzadas como rate limiting y control de intentos de login.
 
@@ -34,7 +34,7 @@ Este es el backend de la aplicación ToDo Center, que proporciona una API RESTfu
 - **Supertest** - Testing de APIs HTTP
 - **Swagger** - Documentación automática de API
 
-## 🚀 Instalación
+## Instalación
 
 1. **Clonar el repositorio**
    ```bash
@@ -58,7 +58,7 @@ Este es el backend de la aplicación ToDo Center, que proporciona una API RESTfu
    - Obtener string de conexión
    - Agregar `MONGO_URI` al archivo `.env`
 
-## 📜 Comandos de Desarrollo
+## Comandos de Desarrollo
 
 ```bash
 # Desarrollo con auto-restart
@@ -77,7 +77,7 @@ npm run test:watch
 npm run lint
 ```
 
-## 🏗 Arquitectura
+## Arquitectura
 
 ### Estructura del Proyecto
 ```
@@ -114,7 +114,7 @@ api/
 - **Conexión**: Mongoose ODM
 - **Timestamps automáticos**: `createdAt` y `updatedAt` en formato ISO-8601
 
-## 🔗 API Endpoints
+## API Endpoints
 
 ### Autenticación
 - `POST /api/auth/register` - Registro de usuario
@@ -136,7 +136,7 @@ api/
 - `POST /api/password-reset/request` - Solicitar restablecimiento
 - `POST /api/password-reset/reset` - Restablecer contraseña
 
-## 📝 Flujo de Registro (US-1)
+## Flujo de Registro (US-1)
 
 ### Criterios de Aceptación Implementados
 
@@ -206,7 +206,7 @@ curl -X POST http://localhost:3000/api/auth/register \
   }'
 ```
 
-## 🔒 Autenticación y Seguridad
+## Autenticación y Seguridad
 
 ### Características de Seguridad
 - **JWT Tokens**: Autenticación stateless
@@ -227,7 +227,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 - Payload mínimo por seguridad
 - Blacklisting para logout
 
-## 🧪 Testing
+## Testing
 
 ### Framework de Testing
 - **Jest**: Framework principal
@@ -260,11 +260,11 @@ npm run test:coverage
 - ✅ Validación de edad mínima
 - ✅ Manejo de errores del servidor
 
-## 🌍 Variables de Entorno
+## Variables de Entorno
 
 ```env
 # Base de datos
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/task-manager
+MONGO_URI=mongodb+srv://root:root@clustertodolist.tml8ekv.mongodb.net/task-manager?retryWrites=true&w=majority&appName=ClusterToDoList
 
 # JWT
 JWT_SECRET=tu_jwt_secret_muy_seguro
@@ -281,12 +281,12 @@ EMAIL_USER=tu_email@gmail.com
 EMAIL_PASS=tu_app_password
 ```
 
-## 📚 Documentación API
+## Documentación API
 
 La documentación completa de la API está disponible via Swagger UI:
 
-- **Desarrollo**: `http://localhost:3000/api-docs`
-- **Producción**: `https://tu-dominio.com/api-docs`
+- **Desarrollo**: `http://localhost:3000/....`
+- **Producción**: `https://tu-dominio.com/....`
 
 ### Características de la Documentación
 - Generada automáticamente con Swagger
@@ -294,13 +294,13 @@ La documentación completa de la API está disponible via Swagger UI:
 - Esquemas de validación
 - Testing interactivo desde el navegador
 
-## 🚀 Despliegue
+## Despliegue
 
 ### Desarrollo Local
 ```bash
 npm run dev
 # Servidor en http://localhost:3000
-# Documentación en http://localhost:3000/api-docs
+# Documentación en http://localhost:3000/...
 ```
 
 ### Producción
@@ -311,28 +311,20 @@ El proyecto está configurado para despliegue en:
 
 ### Verificación de Despliegue
 - ✅ Endpoint raíz responde: `GET /`
-- ✅ Documentación accesible: `GET /api-docs`
+- ✅ Documentación accesible: `GET /...`
 - ✅ Health check: Base de datos conectada
 - ✅ Variables de entorno configuradas
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT.
 
-## 👥 Contribución
+## Contribución
 
 1. Fork del proyecto
 2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
 3. Commit cambios (`git commit -m 'Add: AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Crear Pull Request
-
-## 📞 Soporte
-
-Para preguntas o soporte:
-- Crear issue en el repositorio
-- Email: desarrollador@email.com
-
----
 
 **¡Gracias por usar ToDo Center! 🎉**
