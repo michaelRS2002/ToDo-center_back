@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const LoginAttempt = require('../models/LoginAttempt');
+const BlacklistedToken = require('../models/BlacklistedToken');
 const { generateToken } = require('../utils/jwt');
 const bcrypt = require('bcryptjs');
 
@@ -189,8 +190,9 @@ const loginUser = async (req, res) => {
     
     // Generar token JWT usando la función importada
     const token = generateToken({
-      _id: user._id, 
-      correo: user.correo
+      _id: user._id,
+      correo: user.correo,
+      loginAt: Date.now() // Esto hará que cada token sea único por login
     });
     
     res.status(200).json({
@@ -229,11 +231,33 @@ const loginUser = async (req, res) => {
  * // POST /api/auth/logout
  * // Headers: Authorization: Bearer <token>
  */
-const logoutUser = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Logout exitoso'
-  });
+const logoutUser = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+    }
+    const token = authHeader.split(' ')[1];
+
+    // Si tienes un middleware de autenticación, puedes usar req.user._id
+    // Si no, puedes decodificar el token para obtener el userId si lo necesitas
+
+    await BlacklistedToken.addToBlacklist(token, null, 'logout');
+
+    res.status(200).json({
+      success: true,
+      message: 'Logout exitoso'
+    });
+  } catch (error) {
+    console.error('Error en logout:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al cerrar sesión'
+    });
+  }
 };
 
 module.exports = { 
