@@ -3,6 +3,49 @@ const LoginAttempt = require('../models/LoginAttempt');
 const { generateToken } = require('../utils/jwt');
 const bcrypt = require('bcryptjs');
 
+/**
+ * @fileoverview Controlador de autenticación para ToDo Center.
+ * Maneja el registro, login y logout de usuarios según especificaciones US-1 y US-2.
+ * 
+ * @module controllers/AuthController
+ * @requires ../models/User
+ * @requires ../models/LoginAttempt  
+ * @requires ../utils/jwt
+ * @requires bcryptjs
+ * @since 1.0.0
+ */
+
+/**
+ * Registra un nuevo usuario en el sistema (US-1: Registro básico).
+ * Implementa todas las validaciones y criterios de aceptación especificados.
+ * 
+ * @async
+ * @function registerUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @param {string} req.body.nombres - Nombres del usuario (2-50 caracteres)
+ * @param {string} req.body.apellidos - Apellidos del usuario (2-50 caracteres)
+ * @param {number} req.body.edad - Edad del usuario (≥13 años)
+ * @param {string} req.body.correo - Email único válido
+ * @param {string} req.body.contrasena - Contraseña segura (≥8 chars, validación compleja)
+ * @param {string} req.body.confirmarContrasena - Confirmación de contraseña
+ * @returns {Promise<void>} Respuesta HTTP 201 con datos del usuario o error
+ * 
+ * @example
+ * // POST /api/auth/register
+ * {
+ *   "nombres": "Juan",
+ *   "apellidos": "Pérez",
+ *   "edad": 25,
+ *   "correo": "juan@email.com",
+ *   "contrasena": "MiPassword123!",
+ *   "confirmarContrasena": "MiPassword123!"
+ * }
+ * 
+ * @throws {400} Validación fallida o contraseñas no coinciden
+ * @throws {409} Email ya registrado
+ * @throws {500} Error interno del servidor
+ */
 const registerUser = async (req, res) => {
   try {
     const { nombres, apellidos, edad, correo, contrasena, confirmarContrasena } = req.body;
@@ -88,6 +131,30 @@ const registerUser = async (req, res) => {
   }
 };
 
+/**
+ * Autentica un usuario existente en el sistema (US-2: Login seguro).
+ * Implementa rate limiting, control de intentos y seguridad avanzada.
+ * 
+ * @async
+ * @function loginUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @param {string} req.body.correo - Email del usuario
+ * @param {string} req.body.contrasena - Contraseña del usuario
+ * @returns {Promise<void>} Respuesta HTTP 200 con token JWT o error
+ * 
+ * @example
+ * // POST /api/auth/login
+ * {
+ *   "correo": "juan@email.com",
+ *   "contrasena": "MiPassword123!"
+ * }
+ * 
+ * @throws {401} Credenciales inválidas
+ * @throws {423} Cuenta bloqueada por intentos excesivos
+ * @throws {429} Rate limit excedido por IP
+ * @throws {500} Error interno del servidor
+ */
 const loginUser = async (req, res) => {
   const { correo, contrasena } = req.body;
   const clientIP = req.ip || req.connection.remoteAddress;
@@ -149,6 +216,19 @@ const loginUser = async (req, res) => {
   }
 };
 
+/**
+ * Cierra la sesión del usuario actual.
+ * En implementaciones futuras podría invalidar el token JWT.
+ * 
+ * @function logoutUser
+ * @param {Express.Request} req - Objeto request de Express
+ * @param {Express.Response} res - Objeto response de Express
+ * @returns {void} Respuesta HTTP 200 confirmando logout
+ * 
+ * @example
+ * // POST /api/auth/logout
+ * // Headers: Authorization: Bearer <token>
+ */
 const logoutUser = (req, res) => {
   res.status(200).json({
     success: true,
