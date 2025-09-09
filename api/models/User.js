@@ -48,9 +48,15 @@ const UserSchema = new mongoose.Schema({
   contrasena: {
     type: String,
     required: [true, 'Contraseña es requerida'],
-    minlength: [8, 'Contraseña debe tener al menos 8 caracteres']
+    minlength: [8, 'Contraseña debe tener al menos 8 caracteres'],
+    validate: {
+      validator: function(password) {
+        
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/.test(password);
+      },
+      message: 'Contraseña debe contener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial'
+    }
   },
-
   //Campos para US-2
   lastLogin: {
     type: Date,

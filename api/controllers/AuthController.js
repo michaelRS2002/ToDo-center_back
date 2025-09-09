@@ -37,8 +37,10 @@ const registerUser = async (req, res) => {
     });
     
     // 4. GUARDAR EN MONGODB
+    // 4. GUARDAR EN MONGODB
     const savedUser = await newUser.save();
     
+    // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
     // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
     res.status(201).json({
       success: true,
