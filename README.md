@@ -264,11 +264,11 @@ npm run test:coverage
 
 ```env
 # Base de datos
-MONGO_URI=mongodb+srv://root:root@clustertodolist.tml8ekv.mongodb.net/task-manager?retryWrites=true&w=majority&appName=ClusterToDoList
+MONGO_URI=mongodbURL
 
 # JWT
-JWT_SECRET=tu_jwt_secret_muy_seguro
-JWT_EXPIRES_IN=7d
+JWT_SECRET=jwt_secret
+JWT_EXPIRES_IN=2h
 
 # Servidor
 PORT=3000

@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const LoginAttempt = require('../models/LoginAttempt');
+const BlacklistedToken = require('../models/BlacklistedToken');
 const { generateToken } = require('../utils/jwt');
 const bcrypt = require('bcryptjs');
+const logger = require('../utils/logger');
 
 /**
  * @fileoverview Controlador de autenticación para ToDo Center.
@@ -53,6 +55,7 @@ const registerUser = async (req, res) => {
     
     // 1. VALIDACIÓN DE CONFIRMACIÓN DE CONTRASEÑA
     if (contrasena !== confirmarContrasena) {
+      logger.httpError(400, '/api/auth/register', 'Passwords do not match', { email: correo });
       return res.status(400).json({
         success: false,
         message: 'Las contraseñas no coinciden'
@@ -62,6 +65,7 @@ const registerUser = async (req, res) => {
     // 2. VERIFICAR SI EL EMAIL YA EXISTE
     const existingEmail = await User.findOne({ correo: correo.toLowerCase() });
     if (existingEmail) {
+      logger.auth('REGISTER', correo, 'FAILED - EMAIL_ALREADY_EXISTS', { code: 409 });
       return res.status(409).json({ // 409 Conflict como especifica US-1
         success: false,
         message: 'Este correo ya está registrado'
@@ -98,10 +102,10 @@ const registerUser = async (req, res) => {
       }
     });
     
-    console.log(`usuario registrado exitosamente: ${savedUser.correo}`);
+    logger.auth('REGISTER', savedUser.correo, 'SUCCESS', { userId: savedUser._id });
     
   } catch (error) {
-    console.error('Error en registro:', error);
+    logger.error('REGISTER', 'Error durante el registro', error);
     
     // MANEJO DE ERRORES ESPECÍFICOS
     if (error.name === 'ValidationError') {
@@ -163,6 +167,7 @@ const loginUser = async (req, res) => {
     const user = req.user; // Viene del middleware loginSecurity
     
     if (!user) {
+      logger.auth('LOGIN', correo, 'FAILED - USER_NOT_FOUND', { ip: clientIP, code: 401 });
       await LoginAttempt.registerFailedAttempt(clientIP);
       return res.status(401).json({
         success: false,
@@ -174,6 +179,7 @@ const loginUser = async (req, res) => {
     const isPasswordValid = await user.comparePassword(contrasena);
     
     if (!isPasswordValid) {
+      logger.auth('LOGIN', correo, 'FAILED - INVALID_PASSWORD', { ip: clientIP, code: 401 });
       await user.incrementLoginAttempts();
       await LoginAttempt.registerFailedAttempt(clientIP);
       
@@ -189,9 +195,12 @@ const loginUser = async (req, res) => {
     
     // Generar token JWT usando la función importada
     const token = generateToken({
-      _id: user._id, 
-      correo: user.correo
+      _id: user._id,
+      correo: user.correo,
+      loginAt: Date.now() // Esto hará que cada token sea único por login
     });
+    
+    logger.auth('LOGIN', user.correo, 'SUCCESS', { userId: user._id });
     
     res.status(200).json({
       success: true,
@@ -208,7 +217,7 @@ const loginUser = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error en login:', error);
+    logger.error('LOGIN', 'Error durante el login', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
@@ -229,11 +238,33 @@ const loginUser = async (req, res) => {
  * // POST /api/auth/logout
  * // Headers: Authorization: Bearer <token>
  */
-const logoutUser = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Logout exitoso'
-  });
+const logoutUser = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+    }
+    const token = authHeader.split(' ')[1];
+
+    // Si tienes un middleware de autenticación, puedes usar req.user._id
+    // Si no, puedes decodificar el token para obtener el userId si lo necesitas
+
+    await BlacklistedToken.addToBlacklist(token, null, 'logout');
+
+    res.status(200).json({
+      success: true,
+      message: 'Logout exitoso'
+    });
+  } catch (error) {
+    console.error('Error en logout:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al cerrar sesión'
+    });
+  }
 };
 
 module.exports = { 
