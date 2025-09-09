@@ -13,7 +13,11 @@ const app = express();
 // Middlewares globales
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Cambia el puerto si tu frontend usa otro
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Configurar documentación Swagger
 swaggerSetup(app);
