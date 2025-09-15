@@ -30,9 +30,9 @@ const validateRegister = [
     .withMessage('Edad debe ser entre 18 y 120 años'),
   
   body('correo')
-    .isEmail()
-    .withMessage('Correo electrónico inválido')
-    .customSanitizer(value => value.toLowerCase()), // Solo convertir a minúsculas, NO normalizar
+  .isEmail()
+  .withMessage('Correo electrónico inválido')
+  .customSanitizer(value => (typeof value === 'string' ? value.toLowerCase() : value)),
   
   body('contrasena')
     .isLength({ min: 8 })
