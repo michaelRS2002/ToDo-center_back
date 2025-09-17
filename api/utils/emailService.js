@@ -6,7 +6,7 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
-  secure: process.env.EMAIL_SECURE, // true o false según .env
+  secure: process.env.EMAIL_SECURE=== "true", // true o false según .env
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
@@ -19,7 +19,7 @@ const sendPasswordResetEmail = async (email, token, nombres) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset?token=${token}`;
 
   const mailOptions = {
-    from: '"ToDo Center" <noreply@demomailtrap.co>',
+    from: '"ToDo Center" <${process.env.EMAIL_USER}>',
     to: email,
     subject: 'Restablecer Contraseña - ToDo Center',
     html: `
