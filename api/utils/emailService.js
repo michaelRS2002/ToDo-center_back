@@ -2,15 +2,17 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Configurar transporter con Mailtrap
+// Configurar transporter con nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
+  secure: process.env.EMAIL_SECURE, // true o false según .env
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
   }
 });
+
 
 // Función para enviar correo de restablecimiento de contraseña
 const sendPasswordResetEmail = async (email, token, nombres) => {
