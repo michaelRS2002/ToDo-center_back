@@ -17,7 +17,7 @@ const sendPasswordResetEmail = async (email, token, nombres) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset?token=${token}`;
 
   const mailOptions = {
-    from: '"ToDo Center" <noreply@todocenter.com>',
+    from: '"ToDo Center" <noreply@demomailtrap.co>',
     to: email,
     subject: 'Restablecer Contraseña - ToDo Center',
     html: `
