@@ -53,9 +53,13 @@ const validateCreateTask = [
       return true;
     }),
   
-  body('hora')
+  body('start')
     .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Formato de hora inválido (HH:mm)'),
+    .withMessage('Formato de hora de inicio inválido (HH:mm)'),
+
+  body('end')
+    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('Formato de hora de fin inválido (HH:mm)'),
   
   body('estado')
     .isIn(['Por hacer', 'Haciendo', 'Hecho'])
@@ -95,10 +99,15 @@ const validateUpdateTask = [
       return true;
     }),
   
-  body('hora')
+  body('start')
     .optional()
     .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Formato de hora inválido (HH:mm)'),
+    .withMessage('Formato de hora de inicio inválido (HH:mm)'),
+
+  body('end')
+    .optional()
+    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('Formato de hora de fin inválido (HH:mm)'),
   
   body('estado')
     .optional()

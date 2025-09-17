@@ -20,7 +20,6 @@ const TaskSchema = new mongoose.Schema({
     required: [true, 'La fecha es requerida'],
     validate: {
       validator: function(value) {
-        // Solo validar fecha futura en actualizaciones, no en creación
         if (this.isNew) return true;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -29,16 +28,26 @@ const TaskSchema = new mongoose.Schema({
       message: 'La fecha debe ser futura'
     }
   },
-  
-  hora: {
+
+  start: {
     type: String,
-    required: [true, 'La hora es requerida'],
+    required: [true, 'La hora de inicio es requerida'],
     validate: {
       validator: function(value) {
-        // Validar formato HH:mm (24 horas)
         return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value);
       },
-      message: 'Formato de hora inválido (HH:mm)'
+      message: 'Formato de hora de inicio inválido (HH:mm)'
+    }
+  },
+
+  end: {
+    type: String,
+    required: [true, 'La hora de fin es requerida'],
+    validate: {
+      validator: function(value) {
+        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value);
+      },
+      message: 'Formato de hora de fin inválido (HH:mm)'
     }
   },
   
@@ -58,10 +67,9 @@ const TaskSchema = new mongoose.Schema({
     required: true
   }
 }, {
-  timestamps: true, // Agrega createdAt y updatedAt automáticamente
+  timestamps: true,
   toJSON: {
     transform: function(doc, ret) {
-      // Formatear fechas para el frontend
       if (ret.createdAt) ret.createdAt = ret.createdAt.toISOString();
       if (ret.updatedAt) ret.updatedAt = ret.updatedAt.toISOString();
       return ret;
@@ -69,7 +77,6 @@ const TaskSchema = new mongoose.Schema({
   }
 });
 
-// Índice para optimizar consultas por usuario y fecha
 TaskSchema.index({ userId: 1, fecha: 1 });
 
 module.exports = mongoose.model('Task', TaskSchema);
