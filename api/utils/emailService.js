@@ -19,7 +19,7 @@ const sendPasswordResetEmail = async (email, token, nombres) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset?token=${token}`;
 
   const mailOptions = {
-    from: `"ToDo Center" <${process.env.EMAIL_USER}>`,
+    from: '"ToDo Center" <${process.env.EMAIL_USER}>',
     to: email,
     subject: 'Restablecer Contraseña - ToDo Center',
     html: `
