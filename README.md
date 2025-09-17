@@ -1,174 +1,174 @@
 # ToDo Center - Backend API
 
-API backend para la aplicación de gestión de tareas ToDo Center. Construido con Node.js, Express.js y MongoDB, implementa autenticación segura con JWT y funcionalidades completas de gestión de usuarios y tareas.
+Backend API for the ToDo Center task management application. Built with Node.js, Express.js and MongoDB, it implements secure JWT authentication and complete user and task management functionalities.
 
-## Índice
+## Table of Contents
 
-- [Descripción del Proyecto](#descripción-del-proyecto)
-- [Tecnologías](#tecnologías)
-- [Instalación](#instalación)
-- [Comandos de Desarrollo](#comandos-de-desarrollo)
-- [Arquitectura](#arquitectura)
+- [Project Description](#project-description)
+- [Technologies](#technologies)
+- [Installation](#installation)
+- [Development Commands](#development-commands)
+- [Architecture](#architecture)
 - [API Endpoints](#api-endpoints)
-- [Flujo de Registro (US-1)](#flujo-de-registro-us-1)
-- [Autenticación y Seguridad](#autenticación-y-seguridad)
+- [Registration Flow (US-1)](#registration-flow-us-1)
+- [Authentication and Security](#authentication-and-security)
 - [Testing](#testing)
-- [Variables de Entorno](#variables-de-entorno)
-- [Documentación API](#documentación-api)
+- [Environment Variables](#environment-variables)
+- [API Documentation](#api-documentation)
 
-## Descripción del Proyecto
+## Project Description
 
-Este es el backend de la aplicación ToDo Center, que proporciona una API RESTful para la gestión de usuarios y tareas. Implementa funcionalidades de registro, autenticación, gestión de tareas y características de seguridad avanzadas como rate limiting y control de intentos de login.
+This is the backend of the ToDo Center application, which provides a RESTful API for user and task management. It implements registration, authentication, task management functionalities and advanced security features such as rate limiting and login attempt control.
 
-## 🛠 Tecnologías
+## 🛠 Technologies
 
-- **Node.js** - Entorno de ejecución de JavaScript
-- **Express.js** - Framework web para Node.js
-- **MongoDB** - Base de datos NoSQL
-- **Mongoose** - ODM para MongoDB
-- **bcryptjs** - Encriptación de contraseñas
-- **jsonwebtoken** - Autenticación JWT
-- **express-validator** - Validación de datos
+- **Node.js** - JavaScript runtime environment
+- **Express.js** - Web framework for Node.js
+- **MongoDB** - NoSQL database
+- **Mongoose** - ODM for MongoDB
+- **bcryptjs** - Password encryption
+- **jsonwebtoken** - JWT authentication
+- **express-validator** - Data validation
 - **express-rate-limit** - Rate limiting
-- **Jest** - Framework de testing
-- **Supertest** - Testing de APIs HTTP
-- **Swagger** - Documentación automática de API
+- **Jest** - Testing framework
+- **Supertest** - HTTP API testing
+- **Swagger** - Automatic API documentation
 
-## Instalación
+## Installation
 
-1. **Clonar el repositorio**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/michaelRS2002/ToDo-center_back.git
    cd ToDo-center_back
    ```
 
-2. **Instalar dependencias**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Configurar variables de entorno**
+3. **Configure environment variables**
    ```bash
    cp .env.example .env
-   # Editar .env con tus configuraciones
+   # Edit .env with your configurations
    ```
 
-4. **Configurar base de datos**
-   - Crear cuenta en MongoDB Atlas
-   - Obtener string de conexión
-   - Agregar `MONGO_URI` al archivo `.env`
+4. **Configure database**
+   - Create account on MongoDB Atlas
+   - Get connection string
+   - Add `MONGO_URI` to `.env` file
 
-## Comandos de Desarrollo
+## Development Commands
 
 ```bash
-# Desarrollo con auto-restart
+# Development with auto-restart
 npm run dev
 
-# Producción
+# Production
 npm start
 
-# Ejecutar tests
+# Run tests
 npm test
 
-# Ejecutar tests en modo watch
+# Run tests in watch mode
 npm run test:watch
 
-# Linting (si está configurado)
+# Linting (if configured)
 npm run lint
 ```
 
-## Arquitectura
+## Architecture
 
-### Estructura del Proyecto
+### Project Structure
 ```
 api/
 ├── config/
-│   ├── database.js      # Configuración de MongoDB
-│   └── swagger.js       # Configuración de Swagger
+│   ├── database.js      # MongoDB configuration
+│   └── swagger.js       # Swagger configuration
 ├── controllers/
-│   ├── AuthController.js    # Lógica de autenticación
-│   ├── UserController.js    # Gestión de usuarios
-│   └── TaskController.js    # Gestión de tareas
+│   ├── AuthController.js    # Authentication logic
+│   ├── UserController.js    # User management
+│   └── TaskController.js    # Task management
 ├── middleware/
-│   ├── auth.js          # Middleware de autenticación
-│   ├── users.js         # Middleware de usuarios
-│   └── validateRequest.js   # Validación de requests
+│   ├── auth.js          # Authentication middleware
+│   ├── users.js         # User middleware
+│   └── validateRequest.js   # Request validation
 ├── models/
-│   ├── User.js          # Esquema de usuario
-│   ├── Task.js          # Esquema de tareas
-│   ├── BlacklistedToken.js  # Tokens revocados
-│   └── LoginAttempt.js  # Control de intentos de login
+│   ├── User.js          # User schema
+│   ├── Task.js          # Task schema
+│   ├── BlacklistedToken.js  # Revoked tokens
+│   └── LoginAttempt.js  # Login attempt control
 ├── routes/
-│   ├── authRoutes.js    # Rutas de autenticación
-│   ├── userRoutes.js    # Rutas de usuarios
-│   ├── taskRoutes.js    # Rutas de tareas
-│   └── passwordResetRoutes.js  # Recuperación de contraseña
+│   ├── authRoutes.js    # Authentication routes
+│   ├── userRoutes.js    # User routes
+│   ├── taskRoutes.js    # Task routes
+│   └── passwordResetRoutes.js  # Password recovery
 ├── utils/
-│   └── jwt.js           # Utilidades JWT
-└── index.js             # Punto de entrada principal
+│   └── jwt.js           # JWT utilities
+└── index.js             # Main entry point
 ```
 
-### Base de Datos
-- **MongoDB Atlas** - Base de datos en la nube
-- **Base de datos**: `task-manager`
-- **Conexión**: Mongoose ODM
-- **Timestamps automáticos**: `createdAt` y `updatedAt` en formato ISO-8601
+### Database
+- **MongoDB Atlas** - Cloud database
+- **Database**: `task-manager`
+- **Connection**: Mongoose ODM
+- **Automatic timestamps**: `createdAt` and `updatedAt` in ISO-8601 format
 
 ## API Endpoints
 
-### Autenticación
-- `POST /api/auth/register` - Registro de usuario
-- `POST /api/auth/login` - Inicio de sesión
-- `POST /api/auth/logout` - Cerrar sesión
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
 
-### Usuarios
-- `GET /api/users/profile` - Obtener perfil del usuario
-- `PUT /api/users/profile` - Actualizar perfil
-- `DELETE /api/users/profile` - Eliminar cuenta
+### Users
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update profile
+- `DELETE /api/users/profile` - Delete account
 
-### Tareas
-- `GET /api/tasks` - Listar tareas del usuario
-- `POST /api/tasks` - Crear nueva tarea
-- `PUT /api/tasks/:id` - Actualizar tarea
-- `DELETE /api/tasks/:id` - Eliminar tarea
+### Tasks
+- `GET /api/tasks` - List user tasks
+- `POST /api/tasks` - Create new task
+- `PUT /api/tasks/:id` - Update task
+- `DELETE /api/tasks/:id` - Delete task
 
-### Recuperación de Contraseña
-- `POST /api/password-reset/request` - Solicitar restablecimiento
-- `POST /api/password-reset/reset` - Restablecer contraseña
+### Password Recovery
+- `POST /api/password-reset/request` - Request password reset
+- `POST /api/password-reset/reset` - Reset password
 
-## Flujo de Registro (US-1)
+## Registration Flow (US-1)
 
-### Criterios de Aceptación Implementados
+### Implemented Acceptance Criteria
 
-#### 1. **Visualización del Formulario**
-El endpoint `POST /api/auth/register` acepta los siguientes campos obligatorios:
-- **nombres**: 2-50 caracteres, texto requerido
-- **apellidos**: 2-50 caracteres, texto requerido  
-- **edad**: Número entero ≥ 13 años
-- **correo**: Formato RFC 5322 válido, único en el sistema
-- **contrasena**: ≥ 8 caracteres, debe contener:
-  - Al menos 1 mayúscula
-  - Al menos 1 minúscula  
-  - Al menos 1 número
-  - Al menos 1 carácter especial (@$!%*?&#)
-- **confirmarContrasena**: Debe coincidir con contraseña
+#### 1. **Form Display**
+The `POST /api/auth/register` endpoint accepts the following required fields:
+- **nombres**: 2-50 characters, required text
+- **apellidos**: 2-50 characters, required text  
+- **edad**: Integer ≥ 13 years
+- **correo**: Valid RFC 5322 format, unique in system
+- **contrasena**: ≥ 8 characters, must contain:
+  - At least 1 uppercase letter
+  - At least 1 lowercase letter  
+  - At least 1 number
+  - At least 1 special character (@$!%*?&#)
+- **confirmarContrasena**: Must match password
 
-#### 2. **Validación en Tiempo Real**
-- Validaciones implementadas con `express-validator`
-- Mensajes de error específicos para cada campo
-- Validación de confirmación de contraseña
-- Verificación de formato de email
+#### 2. **Real-time Validation**
+- Validations implemented with `express-validator`
+- Specific error messages for each field
+- Password confirmation validation
+- Email format verification
 
-#### 3. **Envío Exitoso**
-- Respuesta HTTP 201 con el ID del nuevo usuario
-- Contraseña hasheada con bcrypt (12 salt rounds mínimo)
-- Timestamp `createdAt` automático en formato ISO-8601
+#### 3. **Successful Submission**
+- HTTP 201 response with new user ID
+- Password hashed with bcrypt (minimum 12 salt rounds)
+- Automatic `createdAt` timestamp in ISO-8601 format
 
 ```json
-// Respuesta exitosa
+// Successful response
 {
   "success": true,
-  "message": "Cuenta creada con éxito",
+  "message": "Account created successfully",
   "data": {
     "id": "user_id",
     "nombres": "Juan",
@@ -180,20 +180,20 @@ El endpoint `POST /api/auth/register` acepta los siguientes campos obligatorios:
 }
 ```
 
-#### 4. **Manejo de Errores**
-- **409 Conflict**: Email ya registrado
-- **400 Bad Request**: Errores de validación
-- **500 Internal Server Error**: Errores genéricos del servidor
+#### 4. **Error Handling**
+- **409 Conflict**: Email already registered
+- **400 Bad Request**: Validation errors
+- **500 Internal Server Error**: Generic server errors
 
-#### 5. **Persistencia Segura**
-- Contraseñas hasheadas con bcrypt (12 salt rounds)
-- Timestamps automáticos con Mongoose
-- Validaciones a nivel de esquema y controlador
+#### 5. **Secure Persistence**
+- Passwords hashed with bcrypt (12 salt rounds)
+- Automatic timestamps with Mongoose
+- Validations at schema and controller level
 
-### Ejemplo de Uso
+### Usage Example
 
 ```bash
-# Registro exitoso
+# Successful registration
 curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
@@ -206,125 +206,125 @@ curl -X POST http://localhost:3000/api/auth/register \
   }'
 ```
 
-## Autenticación y Seguridad
+## Authentication and Security
 
-### Características de Seguridad
-- **JWT Tokens**: Autenticación stateless
-- **Bcrypt**: Hash de contraseñas con 12 salt rounds
-- **Rate Limiting**: Control de intentos de login por IP
-- **Account Locking**: Bloqueo temporal tras intentos fallidos
-- **CORS**: Configurado para requests cross-origin
-- **Input Validation**: Validación exhaustiva con express-validator
+### Security Features
+- **JWT Tokens**: Stateless authentication
+- **Bcrypt**: Password hashing with 12 salt rounds
+- **Rate Limiting**: Login attempt control per IP
+- **Account Locking**: Temporary blocking after failed attempts
+- **CORS**: Configured for cross-origin requests
+- **Input Validation**: Comprehensive validation with express-validator
 
-### Control de Intentos de Login
-- Máximo 5 intentos fallidos por cuenta
-- Bloqueo temporal de 10 minutos
-- Rate limiting por IP
-- Registro de intentos para auditoría
+### Login Attempt Control
+- Maximum 5 failed attempts per account
+- Temporary 10-minute blocking
+- Rate limiting per IP
+- Attempt logging for auditing
 
-### Tokens JWT
-- Expiración configurable
-- Payload mínimo por seguridad
-- Blacklisting para logout
+### JWT Tokens
+- Configurable expiration
+- Minimal payload for security
+- Blacklisting for logout
 
 ## Testing
 
-### Framework de Testing
-- **Jest**: Framework principal
-- **Supertest**: Testing de endpoints HTTP
-- **Limpieza automática**: Base de datos se limpia entre tests
+### Testing Framework
+- **Jest**: Main framework
+- **Supertest**: HTTP endpoint testing
+- **Automatic cleanup**: Database cleaned between tests
 
-### Archivos de Test
-- `test/api.routes.test.js` - Tests principales de API
-- `test/test-us1-register.js` - Tests específicos de registro
-- `test/test-us2-login.js` - Tests específicos de login
+### Test Files
+- `test/api.routes.test.js` - Main API tests
+- `test/test-us1-register.js` - Registration-specific tests
+- `test/test-us2-login.js` - Login-specific tests
 
-### Ejecutar Tests
+### Run Tests
 ```bash
-# Todos los tests
+# All tests
 npm test
 
-# Tests en modo watch
+# Tests in watch mode
 npm run test:watch
 
-# Tests con coverage
+# Tests with coverage
 npm run test:coverage
 ```
 
-### Casos de Prueba US-1
-- ✅ Registro exitoso con datos válidos
-- ✅ Validación de email duplicado (409 Conflict)
-- ✅ Validación de campos requeridos
-- ✅ Validación de formato de contraseña
-- ✅ Validación de confirmación de contraseña
-- ✅ Validación de edad mínima
-- ✅ Manejo de errores del servidor
+### US-1 Test Cases
+- ✅ Successful registration with valid data
+- ✅ Duplicate email validation (409 Conflict)
+- ✅ Required field validation
+- ✅ Password format validation
+- ✅ Password confirmation validation
+- ✅ Minimum age validation
+- ✅ Server error handling
 
-## Variables de Entorno
+## Environment Variables
 
 ```env
-# Base de datos
+# Database
 MONGO_URI=mongodbURL
 
 # JWT
 JWT_SECRET=jwt_secret
 JWT_EXPIRES_IN=2h
 
-# Servidor
+# Server
 PORT=3000
 NODE_ENV=development
 
-# Email (para recuperación de contraseña)
+# Email (for password recovery)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_USER=tu_email@gmail.com
-EMAIL_PASS=tu_app_password
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
 ```
 
-## Documentación API
+## API Documentation
 
-La documentación completa de la API está disponible via Swagger UI:
+Complete API documentation is available via Swagger UI:
 
-- **Desarrollo**: `http://localhost:3000/....`
-- **Producción**: `https://tu-dominio.com/....`
+- **Development**: `http://localhost:3000/....`
+- **Production**: `https://your-domain.com/....`
 
-### Características de la Documentación
-- Generada automáticamente con Swagger
-- Ejemplos de requests y responses
-- Esquemas de validación
-- Testing interactivo desde el navegador
+### Documentation Features
+- Automatically generated with Swagger
+- Request and response examples
+- Validation schemas
+- Interactive testing from browser
 
-## Despliegue
+## Deployment
 
-### Desarrollo Local
+### Local Development
 ```bash
 npm run dev
-# Servidor en http://localhost:3000
-# Documentación en http://localhost:3000/...
+# Server at http://localhost:3000
+# Documentation at http://localhost:3000/...
 ```
 
-### Producción
-El proyecto está configurado para despliegue en:
-- **Backend**: Render, Heroku, o similar
-- **Base de datos**: MongoDB Atlas
-- **Variables de entorno**: Configurar en la plataforma de despliegue
+### Production
+The project is configured for deployment on:
+- **Backend**: Render, Heroku, or similar
+- **Database**: MongoDB Atlas
+- **Environment variables**: Configure on deployment platform
 
-### Verificación de Despliegue
-- ✅ Endpoint raíz responde: `GET /`
-- ✅ Documentación accesible: `GET /...`
-- ✅ Health check: Base de datos conectada
-- ✅ Variables de entorno configuradas
+### Deployment Verification
+- ✅ Root endpoint responds: `GET /`
+- ✅ Documentation accessible: `GET /...`
+- ✅ Health check: Database connected
+- ✅ Environment variables configured
 
-## Licencia
+## License
 
-Este proyecto está bajo la Licencia MIT.
+This project is licensed under the MIT License.
 
-## Contribución
+## Contributing
 
-1. Fork del proyecto
-2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add: AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Crear Pull Request
+1. Fork the project
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add: AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Create Pull Request
 
-**¡Gracias por usar ToDo Center! 🎉**
+**Thanks for using ToDo Center! 🎉**

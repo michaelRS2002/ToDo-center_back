@@ -6,8 +6,8 @@ const bcrypt = require('bcryptjs');
 const logger = require('../utils/logger');
 
 /**
- * @fileoverview Controlador de autenticación para ToDo Center.
- * Maneja el registro, login y logout de usuarios según especificaciones US-1 y US-2.
+ * @fileoverview Authentication controller for ToDo Center.
+ * Handles user registration, login and logout according to US-1 and US-2 specifications.
  * 
  * @module controllers/AuthController
  * @requires ../models/User
@@ -18,20 +18,20 @@ const logger = require('../utils/logger');
  */
 
 /**
- * Registra un nuevo usuario en el sistema (US-1: Registro básico).
- * Implementa todas las validaciones y criterios de aceptación especificados.
+ * Registers a new user in the system (US-1: Basic registration).
+ * Implements all specified validations and acceptance criteria.
  * 
  * @async
  * @function registerUser
- * @param {Express.Request} req - Objeto request de Express
- * @param {Express.Response} res - Objeto response de Express
- * @param {string} req.body.nombres - Nombres del usuario (2-50 caracteres)
- * @param {string} req.body.apellidos - Apellidos del usuario (2-50 caracteres)
- * @param {number} req.body.edad - Edad del usuario (≥13 años)
- * @param {string} req.body.correo - Email único válido
- * @param {string} req.body.contrasena - Contraseña segura (≥8 chars, validación compleja)
- * @param {string} req.body.confirmarContrasena - Confirmación de contraseña
- * @returns {Promise<void>} Respuesta HTTP 201 con datos del usuario o error
+ * @param {Express.Request} req - Express request object
+ * @param {Express.Response} res - Express response object
+ * @param {string} req.body.nombres - User's first names (2-50 characters)
+ * @param {string} req.body.apellidos - User's last names (2-50 characters)
+ * @param {number} req.body.edad - User's age (≥13 years)
+ * @param {string} req.body.correo - Valid unique email
+ * @param {string} req.body.contrasena - Secure password (≥8 chars, complex validation)
+ * @param {string} req.body.confirmarContrasena - Password confirmation
+ * @returns {Promise<void>} HTTP 201 response with user data or error
  * 
  * @example
  * // POST /api/auth/register
@@ -40,142 +40,142 @@ const logger = require('../utils/logger');
  *   "apellidos": "Pérez",
  *   "edad": 25,
  *   "correo": "juan@email.com",
- *   "contrasena": "MiPassword123!",
- *   "confirmarContrasena": "MiPassword123!"
+ *   "contrasena": "MyPassword123!",
+ *   "confirmarContrasena": "MyPassword123!"
  * }
  * 
- * @throws {400} Validación fallida o contraseñas no coinciden
- * @throws {409} Email ya registrado
- * @throws {500} Error interno del servidor
+ * @throws {400} Validation failed or passwords don't match
+ * @throws {409} Email already registered
+ * @throws {500} Internal server error
  */
 const registerUser = async (req, res) => {
   try {
     const { nombres, apellidos, edad, correo, contrasena, confirmarContrasena } = req.body;
   
     
-    // 1. VALIDACIÓN DE CONFIRMACIÓN DE CONTRASEÑA
+    // 1. PASSWORD CONFIRMATION VALIDATION
     if (contrasena !== confirmarContrasena) {
       logger.httpError(400, '/api/auth/register', 'Passwords do not match', { email: correo });
       return res.status(400).json({
         success: false,
-        message: 'Las contraseñas no coinciden'
+        message: 'Passwords do not match'
       });
     }
     
-    // 2. VERIFICAR SI EL EMAIL YA EXISTE
+    // 2. CHECK IF EMAIL ALREADY EXISTS
     const existingEmail = await User.findOne({ correo: correo.toLowerCase() });
     if (existingEmail) {
       logger.auth('REGISTER', correo, 'FAILED - EMAIL_ALREADY_EXISTS', { code: 409 });
-      return res.status(409).json({ // 409 Conflict como especifica US-1
+      return res.status(409).json({ // 409 Conflict as specified in US-1
         success: false,
-        message: 'Este correo ya está registrado'
+        message: 'This email is already registered'
       });
     }
     
     
-    // 3. CREAR NUEVO USUARIO
+    // 3. CREATE NEW USER
     const newUser = new User({
       nombres,
       apellidos,
-      edad: parseInt(edad), // Asegurar que sea número
+      edad: parseInt(edad), // Ensure it's a number
       correo: correo.toLowerCase(),
-      contrasena // Se hasheará automáticamente por el middleware pre-save
+      contrasena // Will be hashed automatically by pre-save middleware
    
     });
     
-    // 4. GUARDAR EN MONGODB
-    // 4. GUARDAR EN MONGODB
+    // 4. SAVE TO MONGODB
+    // 4. SAVE TO MONGODB
     const savedUser = await newUser.save();
     
-    // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
-    // 5. RESPUESTA HTTP 201 CON ID DEL USUARIO (como requiere US-1)
+    // 5. HTTP 201 RESPONSE WITH USER ID (as required by US-1)
+    // 5. HTTP 201 RESPONSE WITH USER ID (as required by US-1)
     res.status(201).json({
       success: true,
-      message: 'Cuenta creada con éxito',
+      message: 'Account created successfully',
       data: {
         id: savedUser._id,
         nombres: savedUser.nombres,
         apellidos: savedUser.apellidos,
         edad: savedUser.edad,
         correo: savedUser.correo,
-        createdAt: savedUser.createdAt // ISO-8601 automático
+        createdAt: savedUser.createdAt // Automatic ISO-8601
       }
     });
     
     logger.auth('REGISTER', savedUser.correo, 'SUCCESS', { userId: savedUser._id });
     
   } catch (error) {
-    logger.error('REGISTER', 'Error durante el registro', error);
+    logger.error('REGISTER', 'Error during registration', error);
     
-    // MANEJO DE ERRORES ESPECÍFICOS
+    // SPECIFIC ERROR HANDLING
     if (error.name === 'ValidationError') {
-      // Errores de validación de Mongoose
+      // Mongoose validation errors
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Datos de registro inválidos',
+        message: 'Invalid registration data',
         errors: messages
       });
     }
     
     if (error.code === 11000) {
-      // Error de duplicado de MongoDB
+      // MongoDB duplicate error
       const field = Object.keys(error.keyPattern)[0];
       return res.status(409).json({
         success: false,
-        message: `Este correo ya está registrado`
+        message: `This email is already registered`
       });
     }
     
-    // Error 5xx genérico (como especifica US-1)
+    // Generic 5xx error (as specified in US-1)
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor. Intenta de nuevo más tarde'
+      message: 'Internal server error. Please try again later'
     });
   }
 };
 
 /**
- * Autentica un usuario existente en el sistema (US-2: Login seguro).
- * Implementa rate limiting, control de intentos y seguridad avanzada.
+ * Authenticates an existing user in the system (US-2: Secure login).
+ * Implements rate limiting, attempt control and advanced security.
  * 
  * @async
  * @function loginUser
- * @param {Express.Request} req - Objeto request de Express
- * @param {Express.Response} res - Objeto response de Express
- * @param {string} req.body.correo - Email del usuario
- * @param {string} req.body.contrasena - Contraseña del usuario
- * @returns {Promise<void>} Respuesta HTTP 200 con token JWT o error
+ * @param {Express.Request} req - Express request object
+ * @param {Express.Response} res - Express response object
+ * @param {string} req.body.correo - User's email
+ * @param {string} req.body.contrasena - User's password
+ * @returns {Promise<void>} HTTP 200 response with JWT token or error
  * 
  * @example
  * // POST /api/auth/login
  * {
  *   "correo": "juan@email.com",
- *   "contrasena": "MiPassword123!"
+ *   "contrasena": "MyPassword123!"
  * }
  * 
- * @throws {401} Credenciales inválidas
- * @throws {423} Cuenta bloqueada por intentos excesivos
- * @throws {429} Rate limit excedido por IP
- * @throws {500} Error interno del servidor
+ * @throws {401} Invalid credentials
+ * @throws {423} Account locked due to excessive attempts
+ * @throws {429} Rate limit exceeded per IP
+ * @throws {500} Internal server error
  */
 const loginUser = async (req, res) => {
   const { correo, contrasena } = req.body;
   const clientIP = req.ip || req.connection.remoteAddress;
   
   try {
-    const user = req.user; // Viene del middleware loginSecurity
+    const user = req.user; // Comes from loginSecurity middleware
     
     if (!user) {
       logger.auth('LOGIN', correo, 'FAILED - USER_NOT_FOUND', { ip: clientIP, code: 401 });
       await LoginAttempt.registerFailedAttempt(clientIP);
       return res.status(401).json({
         success: false,
-        message: 'Credenciales inválidas'
+        message: 'Invalid credentials'
       });
     }
     
-    // Usar el método comparePassword en lugar de comparación directa
+    // Use comparePassword method instead of direct comparison
     const isPasswordValid = await user.comparePassword(contrasena);
     
     if (!isPasswordValid) {
@@ -185,26 +185,26 @@ const loginUser = async (req, res) => {
       
       return res.status(401).json({
         success: false,
-        message: 'Credenciales inválidas'
+        message: 'Invalid credentials'
       });
     }
     
-    // Resetear intentos fallidos al login exitoso
+    // Reset failed attempts on successful login
     await user.resetLoginAttempts();
     await LoginAttempt.clearAttempts(clientIP);
     
-    // Generar token JWT usando la función importada
+    // Generate JWT token using imported function
     const token = generateToken({
       _id: user._id,
       correo: user.correo,
-      loginAt: Date.now() // Esto hará que cada token sea único por login
+      loginAt: Date.now() // This makes each token unique per login
     });
     
     logger.auth('LOGIN', user.correo, 'SUCCESS', { userId: user._id });
     
     res.status(200).json({
       success: true,
-      message: 'Login exitoso',
+      message: 'Login successful',
       data: {
         token,
         user: {
@@ -217,22 +217,22 @@ const loginUser = async (req, res) => {
     });
     
   } catch (error) {
-    logger.error('LOGIN', 'Error durante el login', error);
+    logger.error('LOGIN', 'Error during login', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Internal server error'
     });
   }
 };
 
 /**
- * Cierra la sesión del usuario actual.
- * En implementaciones futuras podría invalidar el token JWT.
+ * Logs out the current user.
+ * In future implementations could invalidate the JWT token.
  * 
  * @function logoutUser
- * @param {Express.Request} req - Objeto request de Express
- * @param {Express.Response} res - Objeto response de Express
- * @returns {void} Respuesta HTTP 200 confirmando logout
+ * @param {Express.Request} req - Express request object
+ * @param {Express.Response} res - Express response object
+ * @returns {void} HTTP 200 response confirming logout
  * 
  * @example
  * // POST /api/auth/logout
@@ -244,25 +244,25 @@ const logoutUser = async (req, res) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(400).json({
         success: false,
-        message: 'Token no proporcionado'
+        message: 'Token not provided'
       });
     }
     const token = authHeader.split(' ')[1];
 
-    // Si tienes un middleware de autenticación, puedes usar req.user._id
-    // Si no, puedes decodificar el token para obtener el userId si lo necesitas
+    // If you have authentication middleware, you can use req.user._id
+    // If not, you can decode the token to get the userId if needed
 
     await BlacklistedToken.addToBlacklist(token, null, 'logout');
 
     res.status(200).json({
       success: true,
-      message: 'Logout exitoso'
+      message: 'Logout successful'
     });
   } catch (error) {
-    console.error('Error en logout:', error);
+    console.error('Error in logout:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno al cerrar sesión'
+      message: 'Internal error while logging out'
     });
   }
 };

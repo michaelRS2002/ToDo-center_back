@@ -3,20 +3,20 @@ const router = express.Router();
 const UserController = require("../controllers/UserController");
 const { authenticateToken } = require("../middleware/auth");
 
-// Todas las rutas de usuarios requieren autenticación
+// All user routes require authentication
 router.use(authenticateToken);
 
 /**
  * @swagger
  * /api/users/me:
  *   get:
- *     summary: Obtener perfil del usuario autenticado
- *     tags: [Usuarios]
+ *     summary: Get authenticated user profile
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Perfil del usuario obtenido exitosamente
+ *         description: User profile retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -29,44 +29,44 @@ router.use(authenticateToken);
  *                       properties:
  *                         id:
  *                           type: string
- *                           description: ID único del usuario
+ *                           description: Unique user ID
  *                           example: "507f1f77bcf86cd799439011"
  *                         firstName:
  *                           type: string
- *                           description: Nombres del usuario
+ *                           description: User first names
  *                           example: "Juan Carlos"
  *                         lastName:
  *                           type: string
- *                           description: Apellidos del usuario
+ *                           description: User last names
  *                           example: "Pérez García"
  *                         age:
  *                           type: integer
- *                           description: Edad del usuario
+ *                           description: User age
  *                           example: 25
  *                         email:
  *                           type: string
  *                           format: email
- *                           description: Correo electrónico del usuario
+ *                           description: User email address
  *                           example: "juan.perez@email.com"
  *                         createdAt:
  *                           type: string
  *                           format: date-time
- *                           description: Fecha de creación de la cuenta
+ *                           description: Account creation date
  *                           example: "2023-12-01T10:30:00.000Z"
  *       401:
- *         description: Token no proporcionado o inválido
+ *         description: Token not provided or invalid
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -78,8 +78,8 @@ router.get("/me", (req, res) => UserController.getProfile(req, res));
  * @swagger
  * /api/users/me:
  *   put:
- *     summary: Actualizar perfil del usuario autenticado
- *     tags: [Usuarios]
+ *     summary: Update authenticated user profile
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -98,28 +98,28 @@ router.get("/me", (req, res) => UserController.getProfile(req, res));
  *                 type: string
  *                 minLength: 2
  *                 maxLength: 50
- *                 description: Nombres del usuario
+ *                 description: User first names
  *                 example: "Juan Carlos"
  *               lastName:
  *                 type: string
  *                 minLength: 2
  *                 maxLength: 50
- *                 description: Apellidos del usuario
+ *                 description: User last names
  *                 example: "Pérez García"
  *               age:
  *                 type: integer
  *                 minimum: 13
  *                 maximum: 120
- *                 description: Edad del usuario
+ *                 description: User age
  *                 example: 26
  *               email:
  *                 type: string
  *                 format: email
- *                 description: Correo electrónico del usuario
+ *                 description: User email address
  *                 example: "juan.perez.nuevo@email.com"
  *     responses:
  *       200:
- *         description: Perfil actualizado exitosamente
+ *         description: Profile updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -129,7 +129,7 @@ router.get("/me", (req, res) => UserController.getProfile(req, res));
  *                   properties:
  *                     message:
  *                       type: string
- *                       example: "Perfil actualizado exitosamente"
+ *                       example: "Profile updated successfully"
  *                     data:
  *                       type: object
  *                       properties:
@@ -157,41 +157,41 @@ router.get("/me", (req, res) => UserController.getProfile(req, res));
  *                           format: date-time
  *                           example: "2023-12-15T14:20:00.000Z"
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *             examples:
  *               camposFaltantes:
- *                 summary: Campos requeridos faltantes
+ *                 summary: Missing required fields
  *                 value:
  *                   success: false
- *                   message: "Todos los campos son requeridos"
+ *                   message: "All fields are required"
  *               edadMinima:
- *                 summary: Edad menor al mínimo
+ *                 summary: Age below minimum
  *                 value:
  *                   success: false
- *                   message: "La edad mínima es 13 años"
+ *                   message: "Minimum age is 13 years"
  *               emailInvalido:
- *                 summary: Formato de email inválido
+ *                 summary: Invalid email format
  *                 value:
  *                   success: false
- *                   message: "Formato de email inválido"
+ *                   message: "Invalid email format"
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
- *         description: Email ya registrado por otro usuario
+ *         description: Email already registered by another user
  *         content:
  *           application/json:
  *             schema:
@@ -200,9 +200,9 @@ router.get("/me", (req, res) => UserController.getProfile(req, res));
  *                 - type: object
  *                   properties:
  *                     message:
- *                       example: "El email ya está registrado por otro usuario"
+ *                       example: "Email is already registered by another user"
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -214,9 +214,9 @@ router.put("/me", (req, res) => UserController.updateProfile(req, res));
  * @swagger
  * /api/users/me:
  *   delete:
- *     summary: Eliminar cuenta del usuario autenticado
- *     description: Elimina permanentemente la cuenta del usuario. Requiere contraseña y confirmación de texto.
- *     tags: [Usuarios]
+ *     summary: Delete authenticated user account
+ *     description: Permanently deletes the user account. Requires password and text confirmation.
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -232,57 +232,57 @@ router.put("/me", (req, res) => UserController.updateProfile(req, res));
  *               password:
  *                 type: string
  *                 format: password
- *                 description: Contraseña actual del usuario para confirmar la eliminación
+ *                 description: User's current password to confirm deletion
  *                 example: "miContrasenaActual123"
  *               confirmText:
  *                 type: string
- *                 description: Debe escribir exactamente "ELIMINAR" para confirmar
- *                 example: "ELIMINAR"
+ *                 description: Must type exactly "DELETE" to confirm
+ *                 example: "DELETE"
  *     responses:
  *       204:
- *         description: Cuenta eliminada exitosamente (sin contenido)
+ *         description: Account deleted successfully (no content)
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *             examples:
  *               camposFaltantes:
- *                 summary: Campos requeridos faltantes
+ *                 summary: Missing required fields
  *                 value:
  *                   success: false
- *                   message: "Contraseña y confirmación son requeridas"
+ *                   message: "Password and confirmation are required"
  *               textoIncorrecto:
  *                 summary: Texto de confirmación incorrecto
  *                 value:
  *                   success: false
- *                   message: "Debe escribir 'ELIMINAR' para confirmar"
+ *                   message: "Must type 'DELETE' to confirm"
  *       401:
- *         description: Contraseña incorrecta o token inválido
+ *         description: Incorrect password or invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *             examples:
  *               contrasenaIncorrecta:
- *                 summary: Contraseña incorrecta
+ *                 summary: Incorrect password
  *                 value:
  *                   success: false
- *                   message: "Contraseña incorrecta"
+ *                   message: "Incorrect password"
  *               tokenInvalido:
  *                 summary: Token inválido
  *                 value:
  *                   success: false
  *                   message: "Token inválido"
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -294,13 +294,13 @@ router.delete("/me", (req, res) => UserController.deleteAccount(req, res));
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios (Solo administradores)
- *     tags: [Usuarios - Administración]
+ *     summary: Get all users (Administrators only)
+ *     tags: [Users - Administration]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de usuarios obtenida exitosamente
+ *         description: User list retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -313,13 +313,13 @@ router.delete("/me", (req, res) => UserController.deleteAccount(req, res));
  *                       items:
  *                         $ref: '#/components/schemas/User'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -331,8 +331,8 @@ router.get("/", UserController.getAll);
  * @swagger
  * /api/users/{id}:
  *   get:
- *     summary: Obtener usuario por ID (Solo administradores)
- *     tags: [Usuarios - Administración]
+ *     summary: Get user by ID (Administrators only)
+ *     tags: [Users - Administration]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -345,7 +345,7 @@ router.get("/", UserController.getAll);
  *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Usuario obtenido exitosamente
+ *         description: User retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -356,19 +356,19 @@ router.get("/", UserController.getAll);
  *                     data:
  *                       $ref: '#/components/schemas/User'
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -380,8 +380,8 @@ router.get("/:id", UserController.read);
  * @swagger
  * /api/users:
  *   post:
- *     summary: Crear nuevo usuario (Solo administradores)
- *     tags: [Usuarios - Administración]
+ *     summary: Create new user (Administrators only)
+ *     tags: [Users - Administration]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -392,7 +392,7 @@ router.get("/:id", UserController.read);
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: Usuario creado exitosamente
+ *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -403,13 +403,13 @@ router.get("/:id", UserController.read);
  *                     data:
  *                       $ref: '#/components/schemas/User'
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -421,7 +421,7 @@ router.get("/:id", UserController.read);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -433,8 +433,8 @@ router.post("/", UserController.create);
  * @swagger
  * /api/users/{id}:
  *   put:
- *     summary: Actualizar usuario por ID (Solo administradores)
- *     tags: [Usuarios - Administración]
+ *     summary: Update user by ID (Administrators only)
+ *     tags: [Users - Administration]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -476,7 +476,7 @@ router.post("/", UserController.create);
  *                 example: true
  *     responses:
  *       200:
- *         description: Usuario actualizado exitosamente
+ *         description: User updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -487,31 +487,31 @@ router.post("/", UserController.create);
  *                     data:
  *                       $ref: '#/components/schemas/User'
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
- *         description: Email ya registrado por otro usuario
+ *         description: Email already registered by another user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -523,8 +523,8 @@ router.put("/:id", UserController.update);
  * @swagger
  * /api/users/{id}:
  *   delete:
- *     summary: Eliminar usuario por ID (Solo administradores)
- *     tags: [Usuarios - Administración]
+ *     summary: Delete user by ID (Administrators only)
+ *     tags: [Users - Administration]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -537,21 +537,21 @@ router.put("/:id", UserController.update);
  *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       204:
- *         description: Usuario eliminado exitosamente (sin contenido)
+ *         description: User deleted successfully (no content)
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
