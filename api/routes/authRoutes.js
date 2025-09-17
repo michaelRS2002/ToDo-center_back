@@ -9,8 +9,8 @@ const router = express.Router();
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Registrar nuevo usuario
- *     tags: [Autenticación]
+ *     summary: Register new user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -19,7 +19,7 @@ const router = express.Router();
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: Usuario creado exitosamente
+ *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -30,19 +30,19 @@ const router = express.Router();
  *                     data:
  *                       $ref: '#/components/schemas/User'
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  *       409:
- *         description: Email ya registrado
+ *         description: Email already registered
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -54,8 +54,8 @@ router.post('/register', validateRegister, validateRequest, registerUser);
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Iniciar sesión
- *     tags: [Autenticación]
+ *     summary: User login
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -64,31 +64,31 @@ router.post('/register', validateRegister, validateRequest, registerUser);
  *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
- *         description: Login exitoso
+ *         description: Successful login
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
  *       401:
- *         description: Credenciales inválidas
+ *         description: Invalid credentials
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       423:
- *         description: Cuenta bloqueada por intentos fallidos
+ *         description: Account locked due to failed attempts
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       429:
- *         description: Demasiados intentos desde esta IP
+ *         description: Too many attempts from this IP
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -100,11 +100,11 @@ router.post('/login', validateLogin, validateRequest, loginSecurity, loginUser);
  * @swagger
  * /api/auth/logout:
  *   post:
- *     summary: Cerrar sesión
- *     tags: [Autenticación]
+ *     summary: User logout
+ *     tags: [Authentication]
  *     responses:
  *       200:
- *         description: Logout exitoso
+ *         description: Successful logout
  *         content:
  *           application/json:
  *             schema:

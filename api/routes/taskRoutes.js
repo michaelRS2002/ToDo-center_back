@@ -8,20 +8,20 @@ const {
   validateRequest 
 } = require('../middleware/taskValidation');
 
-// Todas las rutas requieren autenticación
+// All routes require authentication
 router.use(authenticateToken);
 
 /**
  * @swagger
  * /api/tasks:
  *   get:
- *     summary: Obtener todas las tareas del usuario
- *     tags: [Tareas]
+ *     summary: Get all user tasks
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de tareas obtenida exitosamente
+ *         description: Task list retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -34,13 +34,13 @@ router.use(authenticateToken);
  *                       items:
  *                         $ref: '#/components/schemas/Task'
  *       401:
- *         description: Token no proporcionado o inválido
+ *         description: Token not provided or invalid
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -52,8 +52,8 @@ router.get('/', TaskController.getAll);
  * @swagger
  * /api/tasks/{id}:
  *   get:
- *     summary: Obtener una tarea específica
- *     tags: [Tareas]
+ *     summary: Get a specific task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -62,10 +62,10 @@ router.get('/', TaskController.getAll);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID único de la tarea
+ *         description: Unique task ID
  *     responses:
  *       200:
- *         description: Tarea obtenida exitosamente
+ *         description: Task retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -76,13 +76,13 @@ router.get('/', TaskController.getAll);
  *                     data:
  *                       $ref: '#/components/schemas/Task'
  *       404:
- *         description: Tarea no encontrada
+ *         description: Task not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -94,8 +94,8 @@ router.get('/:id', TaskController.read);
  * @swagger
  * /api/tasks:
  *   post:
- *     summary: Crear nueva tarea
- *     tags: [Tareas]
+ *     summary: Create new task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -106,7 +106,7 @@ router.get('/:id', TaskController.read);
  *             $ref: '#/components/schemas/CreateTaskRequest'
  *     responses:
  *       201:
- *         description: Tarea creada exitosamente
+ *         description: Task created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -117,13 +117,13 @@ router.get('/:id', TaskController.read);
  *                     data:
  *                       $ref: '#/components/schemas/Task'
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -135,8 +135,8 @@ router.post('/', validateCreateTask, validateRequest, TaskController.create);
  * @swagger
  * /api/tasks/{id}:
  *   put:
- *     summary: Actualizar tarea existente
- *     tags: [Tareas]
+ *     summary: Update existing task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -145,7 +145,7 @@ router.post('/', validateCreateTask, validateRequest, TaskController.create);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID único de la tarea
+ *         description: Unique task ID
  *     requestBody:
  *       required: true
  *       content:
@@ -154,7 +154,7 @@ router.post('/', validateCreateTask, validateRequest, TaskController.create);
  *             $ref: '#/components/schemas/UpdateTaskRequest'
  *     responses:
  *       200:
- *         description: Tarea actualizada exitosamente
+ *         description: Task updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -165,19 +165,19 @@ router.post('/', validateCreateTask, validateRequest, TaskController.create);
  *                     data:
  *                       $ref: '#/components/schemas/Task'
  *       400:
- *         description: Errores de validación
+ *         description: Validation errors
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  *       404:
- *         description: Tarea no encontrada
+ *         description: Task not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -189,8 +189,8 @@ router.put('/:id', validateUpdateTask, validateRequest, TaskController.update);
  * @swagger
  * /api/tasks/{id}:
  *   delete:
- *     summary: Eliminar tarea
- *     tags: [Tareas]
+ *     summary: Delete task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -199,18 +199,18 @@ router.put('/:id', validateUpdateTask, validateRequest, TaskController.update);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID único de la tarea
+ *         description: Unique task ID
  *     responses:
  *       204:
- *         description: Tarea eliminada exitosamente
+ *         description: Task deleted successfully
  *       404:
- *         description: Tarea no encontrada
+ *         description: Task not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -222,8 +222,8 @@ router.delete('/:id', TaskController.delete);
  * @swagger
  * /api/tasks/status/{status}:
  *   get:
- *     summary: Obtener tareas por estado
- *     tags: [Tareas]
+ *     summary: Get tasks by status
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -233,10 +233,10 @@ router.delete('/:id', TaskController.delete);
  *         schema:
  *           type: string
  *           enum: ['Por hacer', 'Haciendo', 'Hecho']
- *         description: Estado de las tareas a filtrar
+ *         description: Status of tasks to filter
  *     responses:
  *       200:
- *         description: Tareas filtradas por estado
+ *         description: Tasks filtered by status
  *         content:
  *           application/json:
  *             schema:
@@ -249,7 +249,7 @@ router.delete('/:id', TaskController.delete);
  *                       items:
  *                         $ref: '#/components/schemas/Task'
  *       401:
- *         description: Token inválido
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
